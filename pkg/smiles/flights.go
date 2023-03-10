@@ -10,7 +10,8 @@ import (
 type FlightRequest struct {
 	Origin      string
 	Destination string
-	Date        string
+	Departure   string
+	Arrival     string
 	Token       string
 }
 
@@ -45,13 +46,14 @@ type Airport struct {
 func GetFlights(p FlightRequest) (Segment, error) {
 	client := resty.New()
 
-	log.Printf("Getting flights from %s to %s on %s", p.Origin, p.Destination, p.Date)
+	log.Printf("Getting flights from %s to %s on %s", p.Origin, p.Destination, p.Departure)
 
 	params := map[string]string{
 		"cabin":                  "ECONOMIC",
 		"originAirportCode":      p.Origin,
 		"destinationAirportCode": p.Destination,
-		"departureDate":          p.Date,
+		"departureDate":          p.Departure,
+		"arrivalDate":            p.Arrival,
 		"memberNumber":           "",
 		"adults":                 "1",
 		"children":               "0",

@@ -7,11 +7,11 @@ import (
 type PriceRequest struct {
 	Origin      string
 	Destination string
-	Dates       []string
+	Departure   string
 }
 
 type BestPrice struct {
-	Date        string
+	Departure   string
 	Origin      string
 	Destination string
 	Miles       int
@@ -26,55 +26,53 @@ func GetBestPrices(p PriceRequest) []BestPrice {
 
 	var bestPrices []BestPrice
 
-	for _, date := range p.Dates {
-		flight, err := GetFlights(FlightRequest{
+	flight, err := GetFlights(FlightRequest{
+		Origin:      p.Origin,
+		Destination: p.Destination,
+		Departure:   p.Departure,
+		Token:       token,
+	})
+
+	if err == nil && len(flight.Flights) > 0 {
+		bestPrices = append(bestPrices, BestPrice{
+			Departure:   p.Departure,
 			Origin:      p.Origin,
 			Destination: p.Destination,
-			Date:        date,
+			Miles:       flight.Price.Miles,
+		})
+	}
+
+	for _, airport := range []string{"BSB", "CGH", "GRU", "VCP", "SDU", "CNF", "GIG"} {
+		flight, err := GetFlights(FlightRequest{
+			Origin:      p.Origin,
+			Destination: airport,
+			Departure:   p.Departure,
 			Token:       token,
 		})
 
-		if err == nil && len(flight.Flights) > 0 {
-			bestPrices = append(bestPrices, BestPrice{
-				Date:        date,
-				Origin:      p.Origin,
-				Destination: p.Destination,
-				Miles:       flight.Price.Miles,
-			})
+		if err != nil || len(flight.Flights) == 0 {
+			continue
 		}
 
-		for _, airport := range []string{"BSB", "CGH", "GRU", "VCP", "SDU", "CNF", "GIG"} {
-			flight, err := GetFlights(FlightRequest{
-				Origin:      p.Origin,
-				Destination: airport,
-				Date:        date,
-				Token:       token,
-			})
+		flight2, err := GetFlights(FlightRequest{
+			Origin:      airport,
+			Destination: p.Destination,
+			Departure:   p.Departure,
+			Token:       token,
+		})
 
-			if err != nil || len(flight.Flights) == 0 {
-				continue
-			}
-
-			flight2, err := GetFlights(FlightRequest{
-				Origin:      airport,
-				Destination: p.Destination,
-				Date:        date,
-				Token:       token,
-			})
-
-			if err != nil || len(flight2.Flights) == 0 {
-				continue
-			}
-
-			totalMiles := flight.Price.Miles + flight2.Price.Miles
-
-			bestPrices = append(bestPrices, BestPrice{
-				Date:        date,
-				Origin:      fmt.Sprintf("%s > %s", p.Origin, airport),
-				Destination: fmt.Sprintf("%s > %s", airport, p.Destination),
-				Miles:       totalMiles,
-			})
+		if err != nil || len(flight2.Flights) == 0 {
+			continue
 		}
+
+		totalMiles := flight.Price.Miles + flight2.Price.Miles
+
+		bestPrices = append(bestPrices, BestPrice{
+			Departure:   p.Departure,
+			Origin:      fmt.Sprintf("%s > %s", p.Origin, airport),
+			Destination: fmt.Sprintf("%s > %s", airport, p.Destination),
+			Miles:       totalMiles,
+		})
 	}
 
 	return bestPrices

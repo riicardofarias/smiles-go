@@ -28,7 +28,7 @@ func (s *Smiles) Render() {
 	t.AppendHeader(table.Row{"Date", "Origin", "Destination", "Miles"})
 
 	for _, flight := range s.Results {
-		t.AppendRow(table.Row{flight.Date, flight.Origin, flight.Destination, flight.Miles})
+		t.AppendRow(table.Row{flight.Departure, flight.Origin, flight.Destination, flight.Miles})
 	}
 
 	t.Render()

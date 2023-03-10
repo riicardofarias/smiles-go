@@ -14,12 +14,6 @@ type FlightView struct {
 	producer flights.Producer
 }
 
-type SearchFlightRequest struct {
-	Origin      string   `json:"origin"`
-	Destination string   `json:"destination"`
-	Date        []string `json:"dates"`
-}
-
 func NewFlightView(producer flights.Producer) View {
 	return &FlightView{
 		producer: producer,
@@ -27,9 +21,13 @@ func NewFlightView(producer flights.Producer) View {
 }
 
 func (v *FlightView) SearchFlightHandler(ctx *fiber.Ctx) error {
-	var request SearchFlightRequest
+	var request flights.SearchFlightRequest
 	if err := ctx.BodyParser(&request); err != nil {
 		return err
+	}
+
+	if err := request.Validate(); err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	message, _ := json.Marshal(request)

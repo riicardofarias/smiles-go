@@ -3,15 +3,32 @@ package flights
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/streadway/amqp"
 	"smiles/pkg/rabbitmq"
 	"smiles/pkg/smiles"
 )
 
 type SearchFlightRequest struct {
-	Origin      string   `json:"origin"`
-	Destination string   `json:"destination"`
-	Dates       []string `json:"dates"`
+	Origin      string `json:"origin"`
+	Destination string `json:"destination"`
+	Departure   string `json:"departure"`
+}
+
+func (v *SearchFlightRequest) Validate() error {
+	if v.Origin == "" {
+		return errors.New("origin is required")
+	}
+
+	if v.Destination == "" {
+		return errors.New("destination is required")
+	}
+
+	if v.Departure == "" {
+		return errors.New("departure is required")
+	}
+
+	return nil
 }
 
 type Consumer interface {
@@ -45,7 +62,7 @@ func worker(delivery *amqp.Delivery) {
 	client.Search(smiles.PriceRequest{
 		Origin:      search.Origin,
 		Destination: search.Destination,
-		Dates:       search.Dates,
+		Departure:   search.Departure,
 	}).Render()
 
 	delivery.Ack(false)

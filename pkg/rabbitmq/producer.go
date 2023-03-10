@@ -5,7 +5,7 @@ import (
 	"github.com/streadway/amqp"
 )
 
-func (c *AmqpClient) Publish(exchangeName, exchangeType string, message []byte) error {
+func (c *AmqpClient) Publish(exchangeName, exchangeType, queueName string, message []byte) error {
 	if c.Connection == nil {
 		panic("Cannot initialize the connection broker. Please initialize the connection first.")
 	}
@@ -32,7 +32,7 @@ func (c *AmqpClient) Publish(exchangeName, exchangeType string, message []byte) 
 	}
 
 	queue, err := ch.QueueDeclare(
-		"",
+		queueName,
 		true,
 		false,
 		false,

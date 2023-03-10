@@ -20,7 +20,7 @@ func NewFlightProducer(client *rabbitmq.AmqpClient) Producer {
 }
 
 func (p *FlightProducer) Publish(request []byte) error {
-	err := p.Connection.Publish("smiles", "fanout", request)
+	err := p.Connection.Publish("smiles", "fanout", "flights", request)
 	if err != nil {
 		logrus.Errorf("Failed to publish message: %s", string(request))
 		return err
